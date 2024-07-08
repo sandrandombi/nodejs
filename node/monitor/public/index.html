@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Home</title>
+</head>
+<body>
+
+    <h1>System Resources Monitoring</h1>
+    <div id="chart">
+        <canvas id="resourcesChart"></canvas>
+    </div>
+    <script>
+        const ctx = document.getElementById("resourcesChart").getContext("2d")
+        const resourcesChart = new Chart(ctx,{
+            type: "bar",
+            data: {
+        labels: [], // Time labels will go here
+        datasets: [
+          {
+            label: 'Free Memory',
+            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+            borderColor: 'rgba(0, 123, 255, 1)',
+            data: [] // Free memory data will go here
+          },
+          {
+            label: 'CPU Load',
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            data: [] // CPU Load data will go here
+          },
+          {
+            label: 'Server Memory Usage',
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            data: [] // Server memory usage data will go here
+          },
+        ],
+      },
+        option: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+            
+        })
+    //  mise à jour de chart
+    function updateChart(){
+     fetch("/resources")
+     .then(response => response.json() )
+     .then(data => {
+        const now = new Date()
+        resourcesChart.data.labels.push(now.toLocaleDateString())
+        resourcesChart.data.datasets[0].data.push(data.freeMem)
+        resourcesChart.data.datasets[1].data.push(data.cpuLoad)
+        resourcesChart.data.datasets[2].data.push(data.processMemoryUsage)
+        resourcesChart.update()
+
+        if (resourcesChart.data.labels.length > 20){
+            resourcesChart.data.labels.shift()
+            resourcesChart.data.datasets.forEach(dataset => {
+                dataset.data.shift()
+            })
+        }
+
+     })
+    }
+      setInterval(updateChart, 1000)
+
+    </script>
+</body>
+</html>
